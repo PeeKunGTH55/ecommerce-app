@@ -1,0 +1,319 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #dc2626;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f3f4f6;
+  --color-secondary-foreground: #111827;
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-ring: #dc2626;
+
+  --font-sans: var(--font-inter), var(--font-noto-thai), system-ui, sans-serif;
+  --font-heading: var(--font-inter), var(--font-noto-thai), system-ui, sans-serif;
+
+  --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+:root {
+  --font-inter: "Inter";
+  --font-noto-thai: "Noto Sans Thai";
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Selection styles */
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+/* Utility classes */
+.container {
+  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.section {
+  @apply py-12 sm:py-16 lg:py-20;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Animation classes */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 300ms ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 200ms ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 200ms ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 300ms ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 300ms ease-out;
+}
+
+/* Form styles */
+.input {
+  @apply w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 transition-colors;
+  @apply placeholder:text-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none;
+  @apply disabled:bg-gray-100 disabled:cursor-not-allowed;
+}
+
+.input-error {
+  @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+}
+
+.label {
+  @apply block text-sm font-medium text-gray-700 mb-1.5;
+}
+
+.error-message {
+  @apply mt-1 text-sm text-red-600;
+}
+
+/* Button styles */
+.btn-primary,
+.btn-secondary,
+.btn-outline,
+.btn-ghost,
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 active:bg-red-800;
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 active:bg-gray-100;
+}
+
+.btn-outline {
+  @apply bg-transparent border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500;
+}
+
+.btn-ghost {
+  @apply bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-base;
+}
+
+.btn-icon {
+  @apply p-2.5;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-xl border border-gray-200 shadow-subtle transition-shadow;
+}
+.card:hover {
+  @apply shadow-card;
+}
+
+.card-hover {
+  @apply bg-white rounded-xl border border-gray-200 shadow-subtle transition-all;
+}
+.card-hover:hover {
+  @apply shadow-elevated -translate-y-0.5;
+}
+
+/* Product grid */
+.product-grid {
+  @apply grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+/* Header styles */
+.header {
+  @apply sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80;
+}
+
+.nav-link {
+  @apply relative px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-red-600;
+  @apply after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-bottom-right after:scale-x-0 after:bg-red-600 after:transition-transform after:duration-200 hover:after:origin-bottom-left hover:after:scale-x-100;
+}
+
+.nav-link-active {
+  @apply text-red-600 after:scale-x-100;
+}
+
+/* Cart drawer */
+.cart-drawer {
+  @apply fixed right-0 top-0 z-50 h-full w-full max-w-sm bg-white shadow-xl transform transition-transform duration-300 lg:max-w-md;
+}
+
+.cart-drawer-open {
+  @apply translate-x-0;
+}
+
+.cart-drawer-closed {
+  @apply translate-x-full;
+}
+
+/* Mobile menu */
+.mobile-menu {
+  @apply fixed inset-0 z-50 bg-white transform transition-transform duration-300 lg:hidden;
+}
+
+.mobile-menu-open {
+  @apply translate-x-0;
+}
+
+.mobile-menu-closed {
+  @apply translate-x-full;
+}
