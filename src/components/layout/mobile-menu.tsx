@@ -113,12 +113,36 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         <div className="border-t border-gray-200 p-4 space-y-2">
           {user ? (
             <>
-              <div className="px-3 py-2 rounded-lg bg-gray-50 mb-2 border border-gray-150">
+              <Link
+                href="/account"
+                onClick={onClose}
+                className="block px-3 py-2.5 rounded-xl bg-gray-50 mb-2 border border-gray-150 hover:bg-gray-100 transition-colors"
+              >
                 <p className="text-xs text-gray-500">บัญชีผู้ใช้</p>
-                <p className="text-sm font-medium text-gray-800 truncate">
+                <p className="text-sm font-semibold text-gray-800 truncate">
                   {user.user_metadata?.full_name || user.email}
                 </p>
+              </Link>
+
+              <div className="space-y-1 py-1 mb-3">
+                <Link
+                  href="/account/orders"
+                  onClick={onClose}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <Package className="h-4 w-4 text-gray-400" />
+                  <span>ประวัติการสั่งซื้อ</span>
+                </Link>
+                <Link
+                  href="/account/addresses"
+                  onClick={onClose}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <Grid3x3 className="h-4 w-4 text-gray-400" />
+                  <span>ที่อยู่จัดส่งสินค้า</span>
+                </Link>
               </div>
+
               <button
                 onClick={handleSignOut}
                 className="btn-secondary w-full flex items-center justify-center gap-2"

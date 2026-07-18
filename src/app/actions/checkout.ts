@@ -231,3 +231,22 @@ export async function confirmPayment(orderId: string): Promise<CheckoutResult> {
 
   return { success: true, orderId };
 }
+
+export async function checkPaymentStatus(orderId: string): Promise<{ success: boolean; paid: boolean }> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("orders")
+      .select("payment_status")
+      .eq("id", orderId)
+      .single();
+
+    if (error || !data) {
+      return { success: false, paid: false };
+    }
+
+    return { success: true, paid: data.payment_status === "paid" };
+  } catch {
+    return { success: false, paid: false };
+  }
+}

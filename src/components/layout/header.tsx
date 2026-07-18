@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, ShoppingBag, User, Search, Heart, LogOut } from "lucide-react";
+import { Menu, ShoppingBag, User, Search, Heart, LogOut, MapPin } from "lucide-react";
+import { Dropdown, DropdownItem, DropdownDivider } from "@/components/ui/dropdown";
 import { CartDrawer } from "@/components/shop/cart-drawer";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { useCart } from "@/hooks/use-cart";
@@ -120,27 +121,53 @@ export function Header() {
             {/* User Menu */}
             <div className="relative hidden md:block">
               {mounted && user ? (
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="/account"
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    title={user.email}
-                  >
-                    <div className="h-8 w-8 rounded-full bg-red-50 flex items-center justify-center text-red-600 font-bold border border-red-200">
-                      {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+                <Dropdown
+                  align="end"
+                  trigger={
+                    <button className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-100 transition-all duration-200 select-none">
+                      <div className="h-8 w-8 rounded-full bg-red-50 flex items-center justify-center text-red-600 font-bold border border-red-200 shadow-sm">
+                        {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden lg:block">
+                        {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                      </span>
+                    </button>
+                  }
+                  content={
+                    <div className="w-56 p-1.5">
+                      <div className="px-3 py-2 text-xs text-gray-400 font-semibold select-none">
+                        ผู้ใช้งาน: {user.email}
+                      </div>
+                      <DropdownDivider />
+                      <DropdownItem
+                        icon={<User className="h-4 w-4" />}
+                        onClick={() => window.location.href = "/account"}
+                      >
+                        บัญชีของฉัน
+                      </DropdownItem>
+                      <DropdownItem
+                        icon={<ShoppingBag className="h-4 w-4" />}
+                        onClick={() => window.location.href = "/account/orders"}
+                      >
+                        ประวัติการสั่งซื้อ
+                      </DropdownItem>
+                      <DropdownItem
+                        icon={<MapPin className="h-4 w-4" />}
+                        onClick={() => window.location.href = "/account/addresses"}
+                      >
+                        ที่อยู่จัดส่งสินค้า
+                      </DropdownItem>
+                      <DropdownDivider />
+                      <DropdownItem
+                        icon={<LogOut className="h-4 w-4 text-red-500" />}
+                        danger
+                        onClick={handleSignOut}
+                      >
+                        ออกจากระบบ
+                      </DropdownItem>
                     </div>
-                    <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">
-                      {user.user_metadata?.full_name || user.email?.split("@")[0]}
-                    </span>
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-gray-100 transition-colors"
-                    title="ออกจากระบบ"
-                  >
-                    <LogOut className="h-5 w-5" />
-                  </button>
-                </div>
+                  }
+                />
               ) : (
                 <Link
                   href="/login"

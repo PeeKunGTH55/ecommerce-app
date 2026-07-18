@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 
 interface DropdownProps {
   trigger: React.ReactNode;
@@ -42,7 +41,7 @@ export function Dropdown({ trigger, content, align = "end" }: DropdownProps) {
     <div
       ref={contentRef}
       className={cn(
-        "fixed z-50 min-w-[160px] origin-top-right rounded-lg bg-white border border-gray-200 shadow-elevated py-1",
+        "absolute z-50 mt-2 min-w-[200px] origin-top-right rounded-xl bg-white border border-gray-200 shadow-xl py-1",
         align === "end" && "right-0",
         align === "start" && "left-0",
         align === "center" && "left-1/2 -translate-x-1/2"
@@ -64,7 +63,7 @@ export function Dropdown({ trigger, content, align = "end" }: DropdownProps) {
       >
         {trigger}
       </div>
-      {isOpen && createPortal(dropdownContent, document.body)}
+      {isOpen && dropdownContent}
     </div>
   );
 }
@@ -99,7 +98,7 @@ export function DropdownItem({ className, icon, danger, children, onClick, ...pr
       role="menuitem"
       {...props}
     >
-      {icon && <span className="flex-shrink-0 h-4 w-4">{icon}</span>}
+      {icon && <span className="shrink-0 h-4 w-4">{icon}</span>}
       <span className="flex-1">{children}</span>
     </button>
   );

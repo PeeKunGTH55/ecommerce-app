@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { CheckCircle, QrCode, Truck } from "lucide-react";
+import { CheckCircle, QrCode, Truck, Plus } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { formatTHB } from "@/lib/currency";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,13 @@ import { Button } from "@/components/ui/button";
 import { PromptPayQR } from "@/components/shop/promptpay-qr";
 import { cn } from "@/lib/utils";
 import { APP_CONFIG } from "@/lib/constants";
-import type { PaymentMethod } from "@/lib/types";
+import type { PaymentMethod, SavedAddress } from "@/lib/types";
 import { useMounted } from "@/hooks/use-mounted";
 import { createOrder } from "@/app/actions/checkout";
 import { useToast } from "@/hooks/use-toast";
+import { getAddresses } from "@/app/actions/account";
+import { createClient } from "@/lib/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function CheckoutPage() {
   const mounted = useMounted();
@@ -28,12 +31,35 @@ export default function CheckoutPage() {
   const [promoCodeInput, setPromoCodeInput] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoError, setPromoError] = useState<string | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
   const [placed, setPlaced] = useState<null | {
     orderNumber: string;
     payload?: string;
     total: number;
     method: PaymentMethod;
   }>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        getAddresses().then((res) => {
+          if (res.success && res.data) {
+            setSavedAddresses(res.data);
+            const defaultAddr = res.data.find((a) => a.is_default);
+            if (defaultAddr) {
+              setSelectedAddressId(defaultAddr.id);
+            } else if (res.data.length > 0) {
+              setSelectedAddressId(res.data[0].id);
+            }
+          }
+        });
+      }
+    });
+  }, []);
 
   if (!mounted) return null;
 
@@ -69,25 +95,51 @@ export default function CheckoutPage() {
 
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
-    const addressLine1 = formData.get("addressLine1") as string;
-    const state = formData.get("state") as string;
-    const city = formData.get("city") as string;
-    const postalCode = formData.get("postalCode") as string;
     const notes = formData.get("notes") as string || undefined;
 
-    const shippingAddress = {
-      first_name: firstName,
-      last_name: lastName,
-      phone: phone,
-      address_line1: addressLine1,
-      city: city,
-      state: state,
-      postal_code: postalCode,
-      country: "Thailand",
-    };
+    let shippingAddress;
+    let phone;
+
+    if (selectedAddressId !== "new") {
+      const addr = savedAddresses.find((a) => a.id === selectedAddressId);
+      if (!addr) {
+        setError("ไม่พบข้อมูลที่อยู่จัดส่งที่เลือก");
+        setLoading(false);
+        return;
+      }
+      shippingAddress = {
+        first_name: addr.first_name,
+        last_name: addr.last_name,
+        phone: addr.phone,
+        address_line1: addr.address_line1,
+        address_line2: addr.address_line2 || undefined,
+        city: addr.city,
+        state: addr.state,
+        postal_code: addr.postal_code,
+        country: addr.country,
+      };
+      phone = addr.phone;
+    } else {
+      const phoneInput = formData.get("phone") as string;
+      const firstName = formData.get("firstName") as string;
+      const lastName = formData.get("lastName") as string;
+      const addressLine1 = formData.get("addressLine1") as string;
+      const state = formData.get("state") as string;
+      const city = formData.get("city") as string;
+      const postalCode = formData.get("postalCode") as string;
+
+      shippingAddress = {
+        first_name: firstName,
+        last_name: lastName,
+        phone: phoneInput,
+        address_line1: addressLine1,
+        city: city,
+        state: state,
+        postal_code: postalCode,
+        country: "Thailand",
+      };
+      phone = phoneInput;
+    }
 
     const checkoutData = {
       email,
@@ -203,24 +255,85 @@ export default function CheckoutPage() {
             <section className="rounded-xl border border-gray-200 bg-white p-6">
               <h2 className="font-semibold text-lg text-gray-900 mb-4">ข้อมูลติดต่อ</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <Input label="อีเมล" name="email" type="email" required placeholder="you@email.com" />
-                <Input label="เบอร์โทรศัพท์" name="phone" type="tel" required placeholder="0812345678" />
+                <Input label="อีเมล" name="email" type="email" required placeholder="you@email.com" defaultValue={user?.email || ""} />
+                <Input label="เบอร์โทรศัพท์" name="phone" type="tel" required placeholder="0812345678" defaultValue={user?.user_metadata?.phone || ""} />
               </div>
             </section>
 
             {/* Shipping */}
             <section className="rounded-xl border border-gray-200 bg-white p-6">
               <h2 className="font-semibold text-lg text-gray-900 mb-4">ที่อยู่จัดส่ง</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input label="ชื่อ" name="firstName" required />
-                <Input label="นามสกุล" name="lastName" required />
-                <div className="sm:col-span-2">
-                  <Input label="ที่อยู่" name="addressLine1" required placeholder="บ้านเลขที่ ถนน ตำบล" />
+              
+              {/* Saved Addresses List */}
+              {savedAddresses.length > 0 && (
+                <div className="mb-6 space-y-3">
+                  <p className="text-sm font-medium text-gray-700">เลือกจากที่อยู่ที่บันทึกไว้:</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {savedAddresses.map((addr) => (
+                      <label
+                        key={addr.id}
+                        className={cn(
+                          "block rounded-xl border-2 p-4 cursor-pointer transition-all hover:border-gray-300 relative",
+                          selectedAddressId === addr.id ? "border-red-600 bg-red-50/30" : "border-gray-200"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="selectedAddress"
+                          checked={selectedAddressId === addr.id}
+                          onChange={() => setSelectedAddressId(addr.id)}
+                          className="sr-only"
+                        />
+                        <div className="flex justify-between items-start gap-2 mb-1.5">
+                          <span className="bg-red-50 text-red-600 text-xs px-2.5 py-0.5 rounded-full font-bold uppercase">
+                            {addr.label}
+                          </span>
+                          {addr.is_default && (
+                            <span className="text-gray-400 text-xs font-medium">เริ่มต้น</span>
+                          )}
+                        </div>
+                        <p className="font-semibold text-sm text-gray-900">
+                          {addr.first_name} {addr.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1 truncate">
+                          {addr.address_line1} {addr.state} {addr.city} {addr.postal_code}
+                        </p>
+                      </label>
+                    ))}
+                    
+                    <label
+                      className={cn(
+                        "flex flex-col justify-center items-center rounded-xl border-2 border-dashed p-4 cursor-pointer transition-all hover:border-gray-300 min-h-[110px]",
+                        selectedAddressId === "new" ? "border-red-600 bg-red-50/30" : "border-gray-200"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="selectedAddress"
+                        checked={selectedAddressId === "new"}
+                        onChange={() => setSelectedAddressId("new")}
+                        className="sr-only"
+                      />
+                      <Plus className="h-5 w-5 text-gray-400 mb-1" />
+                      <span className="text-sm font-semibold text-gray-700 text-center">กรอกที่อยู่ใหม่ / ใช้ที่อยู่อื่น</span>
+                    </label>
+                  </div>
                 </div>
-                <Input label="อำเภอ/เขต" name="state" required />
-                <Input label="จังหวัด" name="city" required />
-                <Input label="รหัสไปรษณีย์" name="postalCode" required maxLength={5} />
-              </div>
+              )}
+
+              {/* Manual Input Form */}
+              {selectedAddressId === "new" && (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Input label="ชื่อ" name="firstName" required />
+                  <Input label="นามสกุล" name="lastName" required />
+                  <div className="sm:col-span-2">
+                    <Input label="ที่อยู่ (บ้านเลขที่ ถนน ซอย/หมู่บ้าน)" name="addressLine1" required placeholder="เช่น 123/45 ถนนประชาราษฎร์" />
+                  </div>
+                  <Input label="อำเภอ/เขต" name="state" required />
+                  <Input label="จังหวัด" name="city" required />
+                  <Input label="รหัสไปรษณีย์" name="postalCode" required maxLength={5} />
+                </div>
+              )}
             </section>
 
             {/* Payment */}
